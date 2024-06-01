@@ -1,11 +1,19 @@
-
+import { useState } from "react"
+import Board from "./components/Board"
+import GameControls from "./components/GameControls"
 import Header from "./components/Header"
 
 
 function App() {
 
   // game status state start or stop
+  const [isGameRunning, setIsGameRunning] = useState(false);
+
+  const startGame = () => setIsGameRunning(true);
+  const stopGame = () => setIsGameRunning(false);
+
   // score state
+  const [score, setScore] = useState(0);
 
 
   return (
@@ -14,6 +22,10 @@ function App() {
 
       <Header />
 
+      <Board isGameRunning={isGameRunning} setScore={setScore} />
+
+      <GameControls isGameRunning={isGameRunning} score={score}
+        startGame={startGame} stopGame={stopGame} />
     </main>
   )
 }

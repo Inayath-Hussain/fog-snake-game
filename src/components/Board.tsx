@@ -74,10 +74,29 @@ const Board: React.FC<Iprops> = ({ isGameRunning, setScore }) => {
 
 
     // create a snake when a diamond is collected
-    // event handler when diamond cell is clicked.
+    // event handler when diamond cell is clicked
+    const handleDiamonClick: React.MouseEventHandler<HTMLDivElement> = (e) => {
+        e.stopPropagation();
+
+        const diamondPosition = diamondDetails.position
+        if (isGameRunning === false ||
+            playerPosition.x !== diamondPosition.x || playerPosition.y !== diamondPosition.y) return
+
+        // update score
+        setScore(prev => prev + 10);
 
 
+        // create new diamond
+        const position: ICell = { x: Math.floor(Math.random() * 10), y: Math.floor(Math.random() * 20) }
+        setDiamondDetails(prev => ({ ...prev, position }))
 
+        // add new snake
+        const newSnake = createSnake();
+        setSnakes(prev => [...prev, newSnake]);
+    }
+
+
+    // handler to update player position
     const updatePlayerPosition = (pos: ICell) => {
 
         // if game has not started or running then donot update position
@@ -139,11 +158,15 @@ const Board: React.FC<Iprops> = ({ isGameRunning, setScore }) => {
     }
 
 
+
+    const isCellDiamond = (pos: ICell) => diamondDetails.position.x === pos.x && diamondDetails.position.y === pos.y
+
+
     return (
         <div className="grid grid-cols-board grid-rows-board">
 
             {cells.map((c, index) => (
-                <div key={index} onMouseEnter={() => updatePlayerPosition(c)}
+                <div key={index} onMouseEnter={() => updatePlayerPosition(c)} onClick={isCellDiamond(c) ? handleDiamonClick : undefined}
                     style={{ background: cellColor(c) }}
                     className={`bg-black w-full h-full border-[1px] border-white box-border text-white`}>{c.x} , {c.y}</div>
             ))}

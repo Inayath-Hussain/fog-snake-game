@@ -41,7 +41,6 @@ export const moveSnake = (snake: ISnake): ISnake => {
     directions = directions.filter(d => d !== snake.direction);
 
     let newDirection = directions[Math.floor(Math.random() * 3)]
-    console.log(newDirection)
     let newPos: ICell = { x: -1, y: -1 }
 
     // we would need to try atmost 3 time to get a valid new position

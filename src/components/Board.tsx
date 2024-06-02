@@ -74,7 +74,6 @@ const Board: React.FC<Iprops> = ({ isGameRunning, setScore }) => {
         const call = () => {
             if (isGameRunning === false) return clearInterval(timerRef.current)
 
-            console.log("call")
             timerRef.current = setInterval(() => {
                 let touches = 0;
                 const newSnakes: ISnake[] = [];
@@ -196,7 +195,7 @@ const Board: React.FC<Iprops> = ({ isGameRunning, setScore }) => {
             {cells.map((c, index) => (
                 <div key={index} onMouseEnter={() => updatePlayerPosition(c)} onClick={isCellDiamond(c) ? handleDiamonClick : undefined}
                     style={{ background: cellColor(c) }}
-                    className={`bg-black w-full h-full border-[1px] border-white box-border text-white`}>{c.x} , {c.y}</div>
+                    className={`bg-black w-full h-full border-[1px] border-white box-border text-white`} />
             ))}
 
         </div>

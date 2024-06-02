@@ -1,6 +1,7 @@
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import { ICell, ISnake } from "../interface";
 import { createSnake } from "../utilities/createSnake";
+import { moveSnake } from "../utilities/moveSnake";
 
 
 const createCells = (): ICell[] => {
@@ -30,10 +31,16 @@ const Board: React.FC<Iprops> = ({ isGameRunning, setScore }) => {
 
     // snakes state [] - each elem contains positions - four pos and direction - "up" | "down" "left" | "right"
     const [snakes, setSnakes] = useState<ISnake[]>([]);
+    const snakesRef = useRef<ISnake[]>([]);
+
+    useEffect(() => {
+        snakesRef.current = snakes;
+    }, [snakes])
 
     // diamond position state
     const [diamondDetails, setDiamondDetails] = useState<{ exists: boolean, position: ICell }>({ exists: false, position: { x: -1, y: -1 } });
 
+    const timerRef = useRef<number>(0);
 
     // create a new diamond when game has started and no diamonds are present on board
     useEffect(() => {
@@ -42,7 +49,6 @@ const Board: React.FC<Iprops> = ({ isGameRunning, setScore }) => {
         const x = Math.floor(Math.random() * 10)
         const y = Math.floor(Math.random() * 20)
 
-        console.log(x, y)
         setDiamondDetails({ exists: true, position: { x, y } })
 
     }, [isGameRunning, diamondDetails.exists])
@@ -53,23 +59,44 @@ const Board: React.FC<Iprops> = ({ isGameRunning, setScore }) => {
 
         if (isGameRunning === false || snakes.length > 0) return
 
-
-        // four nodes
-        // first node - random 0-9 0-19, check if it's not corners and only proceed when true
-        // second node 
-        // 1. 0-1 to decide which will be common with first node x(0) or y(1)
-        // 2. 0-1 to decide whether the uncommon dimension should be increased by 1 or decreased by 1.
-        // if the selected 2. is out of bounds or same as other node then select the other value
-        // if the other value 
-
-        // third and fourth nodes repeat the same as second node but keep the nodes common with second and third node respectively
-
         const snake = createSnake();
         setSnakes(prev => [...prev, snake])
 
 
     }, [isGameRunning])
 
+
+
+    // move snake
+    useEffect(() => {
+        const doesSnakeTouchesPlayer = (snakes: ICell[]) => snakes.some(pos => pos.x === playerPosition.x && pos.y === playerPosition.y)
+
+        const call = () => {
+            if (isGameRunning === false) return clearInterval(timerRef.current)
+
+            console.log("call")
+            timerRef.current = setInterval(() => {
+                let touches = 0;
+                const newSnakes: ISnake[] = [];
+                snakesRef.current.forEach(s => {
+                    const snake = moveSnake(s);
+                    // snake touches player then reduce score
+                    if (doesSnakeTouchesPlayer(snake.nodes)) touches = touches + 1
+                    newSnakes.push(snake)
+                })
+
+                setSnakes(newSnakes)
+                setScore(prev => prev - (10 * touches))
+            }, 900)
+        }
+
+        call();
+
+        return () => {
+            clearInterval(timerRef.current)
+        }
+
+    }, [isGameRunning])
 
 
 
@@ -105,6 +132,9 @@ const Board: React.FC<Iprops> = ({ isGameRunning, setScore }) => {
         // restrict player to jump cells 
         if (Math.abs(playerPosition.x - pos.x) > 1 || Math.abs(playerPosition.y - pos.y) > 1) return
 
+        // player touches snake then reduce score
+        if (snakes.some(s => s.nodes.some(sp => sp.x === pos.x && sp.y === pos.y))) setScore(prev => prev - 10)
+
         // update player position
         setPlayerPosition(pos)
     }
@@ -117,8 +147,6 @@ const Board: React.FC<Iprops> = ({ isGameRunning, setScore }) => {
 
         // if a snake node is present in this cell
         let isSnakePresent = snakes.some(s => s.nodes.some(d => d.x === pos.x && d.y === pos.y))
-
-        // check if any one snake is present
 
 
         // if player is present in this cell
